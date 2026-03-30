@@ -77,12 +77,13 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("NOW()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("NOW()")),
     )
-    op.create_index("idx_posts_location", "posts", ["location"], postgresql_using="gist")
-    op.create_index("idx_posts_created_at", "posts", ["created_at"])
-    op.create_index("idx_posts_user_id_created", "posts", ["user_id", "created_at"])
-    op.create_index("idx_posts_city", "posts", ["city"])
-    op.execute("CREATE INDEX idx_posts_food_name_trgm ON posts USING GIN (food_name gin_trgm_ops)")
-    op.execute("CREATE INDEX idx_posts_restaurant_trgm ON posts USING GIN (restaurant_name gin_trgm_ops)")
+    # GeoAlchemy2 auto-creates the spatial index; use IF NOT EXISTS to be safe
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_location ON posts USING gist (location)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts (created_at)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_user_id_created ON posts (user_id, created_at)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_city ON posts (city)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_food_name_trgm ON posts USING GIN (food_name gin_trgm_ops)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_posts_restaurant_trgm ON posts USING GIN (restaurant_name gin_trgm_ops)")
 
     # Auto-populate PostGIS geography column from lat/lng
     op.execute("""
