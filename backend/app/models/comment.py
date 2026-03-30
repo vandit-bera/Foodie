@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import Text, DateTime, ForeignKey, Index, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -39,10 +39,12 @@ class Comment(Base):
     # Relationships
     user = relationship("User", back_populates="comments")
     post = relationship("Post", back_populates="comments")
+    # Self-referential: one comment (parent) has many replies
+    # remote_side on the backref makes "parent" a many-to-one accessor
     replies = relationship(
         "Comment",
-        backref="parent",
-        foreign_keys=[parent_id],
+        backref=backref("parent", remote_side="Comment.id"),
+        foreign_keys="[Comment.parent_id]",
         lazy="select",
     )
 

@@ -40,7 +40,7 @@ class Post(Base):
     longitude: Mapped[float | None] = mapped_column(Numeric(10, 7), nullable=True)
     # PostGIS GEOGRAPHY column — populated by DB trigger from lat/lng
     location: Mapped[object | None] = mapped_column(
-        Geography(geometry_type="POINT", srid=4326), nullable=True
+        Geography(geometry_type="POINT", srid=4326, spatial_index=False), nullable=True
     )
 
     # Images stored as JSON array: [{"url": "...", "order": 1}, ...]
